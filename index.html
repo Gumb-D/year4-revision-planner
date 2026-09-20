@@ -54,7 +54,7 @@ async function startCloud(){
    applyingCloud=true;state=incoming;if(!state.activities)state.activities=JSON.parse(JSON.stringify(defaultActivities));
    localStorage.setItem("year4rev_v5",JSON.stringify(state));render();applyingCloud=false;setSync("Cloud: synced ✓");
   },()=>setSync("Cloud: offline · saved locally"));
- }catch(e){cloudReady=false;console.error("Firebase startup error",e);setSync("Cloud error: "+(e&&e.code?e.code:(e&&e.message?e.message:"unknown")))}
+ }catch(e){cloudReady=false;console.error("Firebase startup error",e);setSync("Cloud error: "+(e&&e.code?e.code:"unknown")+" · "+(e&&e.message?e.message:""))}
 }
 const key=(d,i)=>d+"_"+i;
 function save(){localStorage.setItem("year4rev_v5",JSON.stringify(state));render();if(applyingCloud)return;setSync("Cloud: saving…");clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{try{await cloudRef.set({state:JSON.parse(JSON.stringify(state)),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});cloudReady=true;setSync("Cloud: synced ✓")}catch(e){cloudReady=false;console.error("Firebase save error",e);setSync("Cloud error: "+(e&&e.code?e.code:(e&&e.message?e.message:"unknown"))) }},250)}
