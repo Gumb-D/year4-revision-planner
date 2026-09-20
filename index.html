@@ -44,7 +44,7 @@ async function startCloud(){
    if(!state.activities)state.activities=JSON.parse(JSON.stringify(defaultActivities));
    localStorage.setItem("year4rev_v5",JSON.stringify(state));render();
   }else{
-   await cloudRef.set({state,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+   await cloudRef.set({state:JSON.parse(JSON.stringify(state)),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
   }
   cloudReady=true;setSync("Cloud: synced ✓");
   cloudRef.onSnapshot(s=>{
@@ -57,7 +57,7 @@ async function startCloud(){
  }catch(e){cloudReady=false;console.error("Firebase startup error",e);setSync("Cloud error: "+(e&&e.code?e.code:(e&&e.message?e.message:"unknown")))}
 }
 const key=(d,i)=>d+"_"+i;
-function save(){localStorage.setItem("year4rev_v5",JSON.stringify(state));render();if(applyingCloud)return;setSync("Cloud: saving…");clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{try{await cloudRef.set({state,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});cloudReady=true;setSync("Cloud: synced ✓")}catch(e){cloudReady=false;console.error("Firebase save error",e);setSync("Cloud error: "+(e&&e.code?e.code:(e&&e.message?e.message:"unknown"))) }},250)}
+function save(){localStorage.setItem("year4rev_v5",JSON.stringify(state));render();if(applyingCloud)return;setSync("Cloud: saving…");clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{try{await cloudRef.set({state:JSON.parse(JSON.stringify(state)),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});cloudReady=true;setSync("Cloud: synced ✓")}catch(e){cloudReady=false;console.error("Firebase save error",e);setSync("Cloud error: "+(e&&e.code?e.code:(e&&e.message?e.message:"unknown"))) }},250)}
 function iso(x){return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")}
 function dayName(x){return["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][x.getDay()]}
 function renderCalendar(){let h=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(x=>`<div class="dow">${x}</div>`).join(""),today=iso(new Date()),a=new Date(2026,8,20),z=new Date(2026,9,17);for(let x=new Date(a);x<=z;x.setDate(x.getDate()+1)){let d=iso(x),dn=dayName(x),acts=state.activities[dn]||[],pp=plans[d]||[],ee=exams.filter(e=>e[0]===d),we=x.getDay()==0||x.getDay()==6;h+=`<div class="day ${we?"weekend":""} ${d===today?"today":""} ${ee.length?"examday":""}" onclick="goDate('${d}')"><div class="date">${x.getMonth()+1}/${x.getDate()}${d===today?" · TODAY":""}</div>`;ee.forEach(e=>h+=`<div class="exam">EXAM · ${e[1]} ${e[2]}</div>`);acts.forEach(a=>h+=`<div class="fixed">${a[1]} · ${a[0]}–${a[2]}</div>`);pp.forEach((p,i)=>h+=`<div class="rev ${state.done[key(d,i)]?"done":""}">${p[0]} · ${p[1]} · ${p[2]}</div>`);h+="</div>"}cal.innerHTML=h}
